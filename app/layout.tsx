@@ -1,6 +1,3 @@
-import { EnvVarWarning } from "@/components/env-var-warning";
-import HeaderAuth from "@/components/header-auth";
-import { hasEnvVars } from "@/utils/supabase/check-env-vars";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
@@ -37,7 +34,6 @@ export default function RootLayout({
             <div className="flex-1 w-full flex flex-col gap-20 items-center">
               <div className="flex flex-col gap-20 w-full">
                 {children}
-                {/* {!hasEnvVars ? <EnvVarWarning /> : <HeaderAuth />} */}
               </div>
             </div>
           </main>

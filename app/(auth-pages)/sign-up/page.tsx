@@ -39,6 +39,16 @@ export default async function Signup(props: {
             />
           </div>
           <div className="flex flex-col gap-2">
+            <Label htmlFor="phone">Phone Number</Label>
+            <Input 
+              name="phone" 
+              type="tel"
+              placeholder="+1234567890" 
+              required 
+              className="bg-gray-100 p-3 rounded-md"
+            />
+          </div>
+          <div className="flex flex-col gap-2">
             <div className="flex justify-between items-center">
               <Label htmlFor="password">Password</Label>
             </div>

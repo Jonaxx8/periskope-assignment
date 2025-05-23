@@ -1,0 +1,73 @@
+import { FC } from 'react';
+import Image from 'next/image';
+import { Chat } from '../../app/types';
+
+interface ChatListItemProps {
+  chat: Chat;
+  isActive: boolean;
+  onClick: () => void;
+}
+
+const ChatListItem: FC<ChatListItemProps> = ({ chat, isActive, onClick }) => {
+  return (
+    <div
+      className={`cursor-pointer p-4 hover:bg-gray-50 border-b ${
+        isActive ? 'bg-gray-50' : ''
+      }`}
+      onClick={onClick}
+    >
+      <div className="flex items-start space-x-3">
+        <div className="relative">
+          {chat.avatar ? (
+            <Image
+              src={chat.avatar}
+              alt={chat.title}
+              width={40}
+              height={40}
+              className="rounded-full"
+            />
+          ) : (
+            <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+              <span className="text-gray-500 text-sm">{chat.title[0]}</span>
+            </div>
+          )}
+          {chat.isOnline && (
+            <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between">
+            <h3 className="font-medium text-gray-900 truncate">{chat.title}</h3>
+            <span className="text-xs text-gray-500">{chat.lastMessageTime}</span>
+          </div>
+          <div className="flex items-center mt-1">
+            {chat.labels?.map((label, index) => (
+              <span
+                key={index}
+                className={`text-xs mr-2 px-1.5 py-0.5 rounded ${
+                  label.toLowerCase() === 'demo'
+                    ? 'bg-orange-100 text-orange-800'
+                    : label.toLowerCase() === 'internal'
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-gray-100 text-gray-800'
+                }`}
+              >
+                {label}
+              </span>
+            ))}
+            {chat.unreadCount > 0 && (
+              <span className="ml-auto bg-green-500 text-white text-xs rounded-full px-2 py-0.5">
+                {chat.unreadCount}
+              </span>
+            )}
+          </div>
+          <p className="text-sm text-gray-500 truncate mt-1">
+            {chat.lastMessage}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ChatListItem; 
