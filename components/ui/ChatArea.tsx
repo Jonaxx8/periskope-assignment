@@ -2,6 +2,7 @@ import { FC } from 'react';
 import { FaPaperclip, FaSmile, FaClock, FaMicrophone } from 'react-icons/fa';
 import { Chat } from '../../app/types';
 import MessageBubble from './MessageBubble';
+import chatBackground from "@/public/chat/background.png";
 
 interface ChatAreaProps {
   chat: Chat | null;
@@ -19,7 +20,7 @@ const ChatArea: FC<ChatAreaProps> = ({ chat }) => {
   return (
     <div className="flex flex-col h-full">
       {/* Chat Header */}
-      <div className="bg-white px-6 py-4 border-b flex items-center justify-between">
+      <div className="bg-white px-6 py-4 border-b flex items-center justify-between shrink-0">
         <div className="flex items-center space-x-3">
           <div className="relative">
             {chat.avatar ? (
@@ -54,8 +55,16 @@ const ChatArea: FC<ChatAreaProps> = ({ chat }) => {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto px-6 py-4 bg-[#ece5dd]">
-        <div className="space-y-4">
+      <div 
+        className="flex-1 overflow-y-auto min-h-0"
+        style={{
+          backgroundImage: `url(${chatBackground.src})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }} 
+      >
+        <div className="px-6 py-4 space-y-4">
           {/* Messages will be mapped here */}
           <MessageBubble
             message="Hello, South Euna!"
@@ -73,7 +82,7 @@ const ChatArea: FC<ChatAreaProps> = ({ chat }) => {
       </div>
 
       {/* Input Area */}
-      <div className="bg-white px-4 py-3 border-t">
+      <div className="bg-white px-4 py-3 border-t shrink-0">
         <div className="flex items-center space-x-2">
           <button className="p-2 hover:bg-gray-100 rounded-full">
             <FaPaperclip className="text-gray-500" />

@@ -11,9 +11,9 @@ interface SidebarProps {
 
 const Sidebar: FC<SidebarProps> = ({ chats, activeChat, onChatSelect }) => {
   return (
-    <aside className="w-80 bg-white border-r flex flex-col h-screen">
+    <aside className="w-80 bg-white border-r flex flex-col min-h-0">
       {/* Header / Filter / Search */}
-      <div className="p-4 border-b">
+      <div className="p-4 border-b shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <span className="text-green-600 font-medium">Custom filter</span>
@@ -38,7 +38,7 @@ const Sidebar: FC<SidebarProps> = ({ chats, activeChat, onChatSelect }) => {
       </div>
 
       {/* Chat List */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto min-h-0">
         {chats.map((chat) => (
           <ChatListItem
             key={chat.id}

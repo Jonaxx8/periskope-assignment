@@ -6,7 +6,7 @@ import { Chat } from "../types";
 import NavigationBar from "../../components/ui/NavigationBar";
 import TopBar from "../../components/ui/TopBar";
 import PlaceholderContent from "../../components/ui/PlaceholderContent";
-
+import RightToolbar from "@/components/ui/RightToolbar";
 // Mock data for development
 const mockChats: Chat[] = [
   {
@@ -61,9 +61,12 @@ export default function ChatPage() {
             activeChat={activeChat}
             onChatSelect={setActiveChat}
           />
-          <main className="flex-1">
-            <ChatArea chat={activeChat} />
-          </main>
+          <div className="flex-1 min-h-0 flex">
+            <div className="flex-1">
+              <ChatArea chat={activeChat} />
+            </div>
+            <RightToolbar />
+          </div>
         </>
       );
     }
@@ -71,15 +74,15 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex h-screen bg-white">
+    <div className="flex h-screen overflow-hidden bg-white">
       <NavigationBar activeItem={activeNavItem} onItemSelect={handleNavSelect} />
-      <div className="flex flex-col flex-1">
+      <div className="flex flex-col flex-1 min-h-0">
         <TopBar 
           activeSection={activeNavItem}
           onRefresh={handleRefresh} 
           onHelp={handleHelp} 
         />
-        <div className="flex flex-1">
+        <div className="flex flex-1 min-h-0">
           {renderContent()}
         </div>
       </div>
