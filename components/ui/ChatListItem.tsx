@@ -55,11 +55,11 @@ const ChatListItem: FC<ChatListItemProps> = ({ chat, isActive, onClick }) => {
                 {label}
               </span>
             ))}
-            {chat.unreadCount > 0 && (
+            {/* {chat.unreadCount > 0 && (
               <span className="ml-auto bg-green-500 text-white text-xs rounded-full px-2 py-0.5">
                 {chat.unreadCount}
               </span>
-            )}
+            )} */}
           </div>
           <p className="text-sm text-gray-500 truncate mt-1">
             {chat.lastMessage}
