@@ -1,5 +1,5 @@
 "use server";
-import { createClient } from '@/utils/supabase/server'; // Changed from 'client' to 'server'
+import { createClient } from '@/utils/supabase/server'; 
 
 export const getChats = async () => {
   const supabase = await createClient();
@@ -141,8 +141,6 @@ export const getParticipants = async (conversationId: string) => {
     throw new Error(error.message);
   }
 
-  console.log("participants", participants);
-
   return participants;
 }
 
@@ -249,5 +247,30 @@ export const getMessagesWithSenderName = async (conversationId: string) => {
   }));
 };
 
+export const getLastMessageOfConversationWithSenderName = async (conversationId: string) => {
+  const supabase = await createClient();
+  const { data: messages, error: messagesError } = await supabase
+    .from('messages')
+    .select('*')
+    .eq('conversation_id', conversationId)
+    .order('created_at', { ascending: false })
+    .limit(1);
 
+  if (messagesError) throw new Error(messagesError.message);
 
+  if (!messages || messages.length === 0) return [];
+
+  // Get sender profile
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('id, display_name, email')
+    .eq('id', messages[0].sender_id)
+    .single();
+
+  if (profileError) throw new Error(profileError.message);
+
+  return [{
+    ...messages[0],
+    sender_name: profile?.display_name || profile?.email || ''
+  }];
+};

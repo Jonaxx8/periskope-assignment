@@ -8,6 +8,7 @@ import { getParticipants, getMessages, sendMessage, getMessagesWithSenderName } 
 import { LuSearch } from "react-icons/lu";
 import { BsStars } from "react-icons/bs";
 import { createClient } from '@/utils/supabase/client';
+import { IoMdSend } from "react-icons/io";
 
 
 
@@ -143,7 +144,7 @@ const ChatArea: FC<ChatAreaProps> = ({ chat }) => {
               key={message.id}
               message={message.content}
               timestamp={new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              sender={message.sender_name || 'Unknown'} 
+              sender={message.sender_name?.split("@")[0].split(".")[0] || 'Unknown'} 
               isOutgoing={message.sender_id === user?.id}
             />
           ))}
@@ -167,7 +168,7 @@ const ChatArea: FC<ChatAreaProps> = ({ chat }) => {
           }}
         />
         <button className="p-2 text-green-600 hover:bg-gray-100 rounded-full" onClick={handleSendMessage}>
-          <FaPaperPlane />
+          <IoMdSend className="text-2xl" />
         </button>
       </div>
 

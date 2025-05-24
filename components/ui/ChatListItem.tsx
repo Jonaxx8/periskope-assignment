@@ -1,6 +1,7 @@
-import { FC } from 'react';
+import { FC, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Chat } from '../../app/types';
+import { getLastMessageOfConversationWithSenderName } from '../../app/chat/actions';
 
 interface ChatListItemProps {
   chat: Chat;
@@ -9,6 +10,17 @@ interface ChatListItemProps {
 }
 
 const ChatListItem: FC<ChatListItemProps> = ({ chat, isActive, onClick }) => {
+  const [lastMessage, setLastMessage] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchLastMessage = async () => {
+      const message = await getLastMessageOfConversationWithSenderName(chat.id);
+      setLastMessage(message);
+    };
+    fetchLastMessage();
+  }, [chat.id]);
+
+  console.log(lastMessage);
   return (
     <div
       className={`cursor-pointer p-4 hover:bg-gray-50 border-b ${
@@ -40,30 +52,16 @@ const ChatListItem: FC<ChatListItemProps> = ({ chat, isActive, onClick }) => {
             <h3 className="font-medium text-gray-900 truncate">{chat.title}</h3>
             <span className="text-xs text-gray-500">{chat.lastMessageTime}</span>
           </div>
-          <div className="flex items-center mt-1">
-            {chat.labels?.map((label, index) => (
-              <span
-                key={index}
-                className={`text-xs mr-2 px-1.5 py-0.5 rounded ${
-                  label.toLowerCase() === 'demo'
-                    ? 'bg-orange-100 text-orange-800'
-                    : label.toLowerCase() === 'internal'
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-gray-100 text-gray-800'
-                }`}
-              >
-                {label}
-              </span>
-            ))}
-            {/* {chat.unreadCount > 0 && (
-              <span className="ml-auto bg-green-500 text-white text-xs rounded-full px-2 py-0.5">
-                {chat.unreadCount}
-              </span>
-            )} */}
-          </div>
-          <p className="text-sm text-gray-500 truncate mt-1">
-            {chat.lastMessage}
-          </p>
+          {lastMessage && lastMessage.length > 0 && (
+            <div className="flex items-center mt-1">
+            <span className="text-sm text-gray-600">
+              {lastMessage?.[0]?.sender_name.split("@")[0].split(".")[0]+": " || ''} 
+            </span>
+            <span className="text-sm text-gray-500">
+              {lastMessage?.[0]?.content}
+            </span>
+            </div>
+          )}
         </div>
       </div>
     </div>
