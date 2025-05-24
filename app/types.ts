@@ -12,13 +12,10 @@ export interface Chat {
 
 export interface Message {
   id: string;
+  conversation_id: string;
+  sender_id: string;
+  sender_name?: string;
   content: string;
-  timestamp: string;
-  sender: {
-    id: string;
-    name: string;
-    avatar?: string;
-  };
-  isOutgoing: boolean;
-  status?: 'sent' | 'delivered' | 'read';
-} 
+  created_at: string;
+  is_read: boolean;
+}
