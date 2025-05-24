@@ -7,44 +7,58 @@ import NavigationBar from "../../components/ui/NavigationBar";
 import TopBar from "../../components/ui/TopBar";
 import PlaceholderContent from "../../components/ui/PlaceholderContent";
 import RightToolbar from "@/components/ui/RightToolbar";
-// Mock data for development
-const mockChats: Chat[] = [
-  {
-    id: "1",
-    title: "Test El Centro",
-    labels: ["Demo"],
-    lastMessage: "Roshnag: Hello, Ahmadport!",
-    lastMessageTime: "04-Feb-25",
-    participants: ["Roshnag Airtel", "Roshnag Jio", "Bharat Kumar Ramesh"],
-  },
-  {
-    id: "2",
-    title: "Test Skope Final 5",
-    labels: ["Demo"],
-    lastMessage: "Support2: This doesn't go on Tuesday...",
-    lastMessageTime: "Yesterday",
-  },
-  {
-    id: "3",
-    title: "Periskope Team Chat",
-    labels: ["Demo", "Internal"],
-    lastMessage: "Periskope: Test message",
-    lastMessageTime: "28-Feb-25",
-  },
-];
+import { createClient } from "@/utils/supabase/client";
 
 export default function ChatPage() {
-  const [chats, setChats] = useState<Chat[]>(mockChats);
+  const [chats, setChats] = useState<Chat[]>([]);
   const [activeChat, setActiveChat] = useState<Chat | null>(null);
   const [activeNavItem, setActiveNavItem] = useState('chats');
+  const supabase = createClient();
+
+  const fetchChats = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('conversations')
+        .select(`
+          id,
+          title,
+          type,
+          created_at,
+          last_message_at,
+          participants!inner (
+            user_id
+          )
+        `)
+        .eq('participants.user_id', user.id)
+        .order('last_message_at', { ascending: false });
+
+      if (error) throw error;
+
+      const formattedChats: Chat[] = data.map(chat => ({
+        id: chat.id,
+        title: chat.title,
+        type: chat.type,
+        lastMessageTime: new Date(chat.last_message_at || chat.created_at).toLocaleDateString(),
+      }));
+
+      setChats(formattedChats);
+    } catch (error) {
+      console.error('Error fetching chats:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchChats();
+  }, []);
 
   const handleRefresh = () => {
-    // Implement refresh logic here
-    console.log('Refreshing...');
+    fetchChats();
   };
 
   const handleHelp = () => {
-    // Implement help logic here
     console.log('Opening help...');
   };
 
@@ -60,6 +74,7 @@ export default function ChatPage() {
             chats={chats}
             activeChat={activeChat}
             onChatSelect={setActiveChat}
+            onChatsUpdate={fetchChats}
           />
           <div className="flex-1 min-h-0 flex">
             <div className="flex-1">

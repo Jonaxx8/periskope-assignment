@@ -5,17 +5,27 @@ import { Chat } from '../../app/types';
 import { MdFilterList } from "react-icons/md";
 import { RiFolderDownloadFill } from "react-icons/ri";
 import { IoMdCloseCircle } from "react-icons/io";
+import { TbMessageCirclePlus } from "react-icons/tb";
+import CreateChatModal from './CreateChatModal';
 
 interface SidebarProps {
   chats: Chat[];
   activeChat: Chat | null;
   onChatSelect: (chat: Chat) => void;
+  onChatsUpdate?: () => void;
 }
 
-const Sidebar: FC<SidebarProps> = ({ chats, activeChat, onChatSelect }) => {
+const Sidebar: FC<SidebarProps> = ({ chats, activeChat, onChatSelect, onChatsUpdate }) => {
   const [activeSearch, setActiveSearch] = useState(false)
   const [activeFilter, setActiveFilter] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
+  const [isCreateChatOpen, setIsCreateChatOpen] = useState(false)
+
+  const handleChatCreated = () => {
+    if (onChatsUpdate) {
+      onChatsUpdate();
+    }
+  };
 
   // Filter chats based on search query
   const filteredChats = useMemo(() => {
@@ -45,7 +55,7 @@ const Sidebar: FC<SidebarProps> = ({ chats, activeChat, onChatSelect }) => {
   };
 
   return (
-    <aside className="w-96 bg-white border-r flex flex-col min-h-0">
+    <aside className="w-96 bg-white border-r flex flex-col min-h-0 relative">
       {/* Header / Filter / Search */}
       <div className="p-4 border-b shrink-0 bg-gray-50">
         <div className="flex items-center justify-between">
@@ -112,6 +122,21 @@ const Sidebar: FC<SidebarProps> = ({ chats, activeChat, onChatSelect }) => {
           </div>
         )}
       </div>
+
+      {/* Create Chat Button */}
+      <button
+        onClick={() => setIsCreateChatOpen(true)}
+        className="absolute bottom-6 right-6 w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-green-700 transition-colors"
+      >
+        <TbMessageCirclePlus size={24} />
+      </button>
+
+      {/* Create Chat Modal */}
+      <CreateChatModal
+        isOpen={isCreateChatOpen}
+        onClose={() => setIsCreateChatOpen(false)}
+        onChatCreated={handleChatCreated}
+      />
     </aside>
   );
 };
