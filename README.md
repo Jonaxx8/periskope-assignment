@@ -94,8 +94,3 @@ The application uses the following main tables in Supabase:
 - Row Level Security (RLS) policies
 - Protected API endpoints
 - Secure user data handling
-
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
