@@ -30,7 +30,7 @@ const NavigationBar: FC<NavigationBarProps> = ({ activeItem, onItemSelect }) => 
       { id: 'home', icon: TiHome },
     ],
     [
-      { id: 'messages', icon: AiFillMessage },
+      { id: 'chats', icon: AiFillMessage },
       { id: 'coupons', icon: BiSolidCoupon },
       { id: 'analytics', icon: FaChartLine },
     ],

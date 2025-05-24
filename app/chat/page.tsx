@@ -36,7 +36,7 @@ const mockChats: Chat[] = [
 export default function ChatPage() {
   const [chats, setChats] = useState<Chat[]>(mockChats);
   const [activeChat, setActiveChat] = useState<Chat | null>(null);
-  const [activeNavItem, setActiveNavItem] = useState('messages');
+  const [activeNavItem, setActiveNavItem] = useState('chats');
 
   const handleRefresh = () => {
     // Implement refresh logic here
@@ -53,7 +53,7 @@ export default function ChatPage() {
   };
 
   const renderContent = () => {
-    if (activeNavItem === 'messages') {
+    if (activeNavItem === 'chats') {
       return (
         <>
           <Sidebar
