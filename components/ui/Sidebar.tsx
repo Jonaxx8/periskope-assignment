@@ -1,4 +1,4 @@
-import { FC, useState, useMemo } from 'react';
+import { FC, useState, useMemo, useEffect } from 'react';
 import { FaSearch } from 'react-icons/fa';
 import ChatListItem from '../../components/ui/ChatListItem';
 import { Chat } from '../../app/types';
@@ -7,19 +7,87 @@ import { RiFolderDownloadFill } from "react-icons/ri";
 import { IoMdCloseCircle } from "react-icons/io";
 import { TbMessageCirclePlus } from "react-icons/tb";
 import CreateChatModal from './CreateChatModal';
+import { CgSpinner } from "react-icons/cg";
+import { createClient } from '@/utils/supabase/client';
+import { getLastMessageOfConversationWithSenderName } from '@/app/chat/actions';
 
 interface SidebarProps {
   chats: Chat[];
   activeChat: Chat | null;
   onChatSelect: (chat: Chat) => void;
   onChatsUpdate?: () => void;
+  isLoading?: boolean;
 }
 
-const Sidebar: FC<SidebarProps> = ({ chats, activeChat, onChatSelect, onChatsUpdate }) => {
+const Sidebar: FC<SidebarProps> = ({ 
+  chats, 
+  activeChat, 
+  onChatSelect, 
+  onChatsUpdate,
+  isLoading = false 
+}) => {
   const [activeSearch, setActiveSearch] = useState(false)
   const [activeFilter, setActiveFilter] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [isCreateChatOpen, setIsCreateChatOpen] = useState(false)
+  const [localChats, setLocalChats] = useState(chats)
+  const supabase = createClient();
+
+  // Update local chats when props change
+  useEffect(() => {
+    setLocalChats(chats);
+  }, [chats]);
+
+  useEffect(() => {
+    if (!chats.length) return;
+
+    // Set up real-time subscription for all chats
+    const channels = chats.map(chat => {
+      return supabase
+        .channel(`sidebar-chat:${chat.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'messages',
+            filter: `conversation_id=eq.${chat.id}`
+          },
+          async (payload) => {
+            try {
+              // Get the last message with sender name
+              const lastMessage = await getLastMessageOfConversationWithSenderName(chat.id);
+              
+              // Update the local chat with the new last message
+              setLocalChats(prevChats => 
+                prevChats.map(prevChat => 
+                  prevChat.id === chat.id 
+                    ? {
+                        ...prevChat,
+                        last_message: lastMessage[0]?.content || '',
+                        last_message_at: lastMessage[0]?.created_at || prevChat.last_message_at,
+                        last_sender: lastMessage[0]?.sender_name || ''
+                      }
+                    : prevChat
+                )
+              );
+            } catch (error) {
+              console.error('Error updating chat:', error);
+            }
+          }
+        )
+        .subscribe((status) => {
+          console.log(`Subscription status for chat ${chat.id}:`, status);
+        });
+    });
+
+    // Cleanup subscriptions
+    return () => {
+      channels.forEach(channel => {
+        supabase.removeChannel(channel);
+      });
+    };
+  }, [chats]);
 
   const handleChatCreated = () => {
     if (onChatsUpdate) {
@@ -29,23 +97,31 @@ const Sidebar: FC<SidebarProps> = ({ chats, activeChat, onChatSelect, onChatsUpd
 
   // Filter chats based on search query
   const filteredChats = useMemo(() => {
-    if (!searchQuery.trim()) return chats;
+    if (!searchQuery.trim()) return localChats;
     
     const query = searchQuery.toLowerCase().trim();
-    return chats.filter(chat => {
-      // Search in chat title/name
+    return localChats.filter(chat => {
+      // Search in chat title
       if (chat.title?.toLowerCase().includes(query)) return true;
       
-      // Search in last message if exists
+      // Search in last message
+      if (chat.last_message?.toLowerCase().includes(query)) return true;
       
-      // // Search in participants if exists
-      // if (chat.participants?.some(participant => 
-      //   participant.name?.toLowerCase().includes(query)
-      // )) return true;
+      // Search in last sender
+      if (chat.last_sender?.toLowerCase().includes(query)) return true;
       
       return false;
     });
-  }, [chats, searchQuery]);
+  }, [localChats, searchQuery]);
+
+  // Sort chats by last message time
+  const sortedFilteredChats = useMemo(() => {
+    return [...filteredChats].sort((a, b) => {
+      const dateA = new Date(a.last_message_at || 0);
+      const dateB = new Date(b.last_message_at || 0);
+      return dateB.getTime() - dateA.getTime();
+    });
+  }, [filteredChats]);
 
   const handleSearchToggle = () => {
     setActiveSearch(!activeSearch);
@@ -92,7 +168,7 @@ const Sidebar: FC<SidebarProps> = ({ chats, activeChat, onChatSelect, onChatsUpd
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="bg-transparent outline-none text-sm flex-1"
-              placeholder="Search chats"
+              placeholder="Search in messages and chats..."
             />
             {searchQuery && (
               <button
@@ -108,18 +184,26 @@ const Sidebar: FC<SidebarProps> = ({ chats, activeChat, onChatSelect, onChatsUpd
 
       {/* Chat List */}
       <div className="flex-1 overflow-y-auto min-h-0">
-        {filteredChats.map((chat) => (
-          <ChatListItem
-            key={chat.id}
-            chat={chat}
-            isActive={activeChat?.id === chat.id}
-            onClick={() => onChatSelect(chat)}
-          />
-        ))}
-        {activeSearch && filteredChats.length === 0 && (
-          <div className="p-4 text-center text-gray-500 text-sm">
-            No chats found matching "{searchQuery}"
+        {isLoading ? (
+          <div className="flex items-center justify-center h-32">
+            <CgSpinner className="animate-spin text-gray-400 text-2xl" />
           </div>
+        ) : (
+          <>
+            {sortedFilteredChats.map((chat) => (
+              <ChatListItem
+                key={chat.id}
+                chat={chat}
+                isActive={activeChat?.id === chat.id}
+                onClick={() => onChatSelect(chat)}
+              />
+            ))}
+            {activeSearch && sortedFilteredChats.length === 0 && (
+              <div className="p-4 text-center text-gray-500 text-sm">
+                No chats found matching "{searchQuery}"
+              </div>
+            )}
+          </>
         )}
       </div>
 

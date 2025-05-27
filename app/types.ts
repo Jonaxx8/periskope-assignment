@@ -1,13 +1,12 @@
 export interface Chat {
   id: string;
   title: string;
+  type: 'direct' | 'group';
   avatar?: string;
-  lastMessage?: string;
-  lastMessageTime?: string;
-  unreadCount?: number;
-  isOnline?: boolean;
-  labels?: string[];
-  participants?: string[];
+  created_at: string;
+  last_message?: string;
+  last_message_at?: string;
+  last_sender?: string;
 }
 
 export interface Message {

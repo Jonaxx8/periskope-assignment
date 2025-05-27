@@ -1,5 +1,5 @@
 "use client"
-import { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useState, useRef } from 'react';
 import { FaPaperclip, FaSmile, FaMicrophone, FaMagic, FaRedo, FaPaperPlane, FaClock, FaBook } from 'react-icons/fa';
 import { Chat, Message } from '../../app/types';
 import MessageBubble from './MessageBubble';
@@ -9,6 +9,7 @@ import { LuSearch } from "react-icons/lu";
 import { BsStars } from "react-icons/bs";
 import { createClient } from '@/utils/supabase/client';
 import { IoMdSend } from "react-icons/io";
+import { CgSpinner } from "react-icons/cg";
 
 interface ChatAreaProps {
   chat: Chat | null;
@@ -19,7 +20,19 @@ const ChatArea: FC<ChatAreaProps> = ({ chat }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [messageInput, setMessageInput] = useState('');
   const [user, setUser] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   useEffect(() => {
     const getUser = async () => {
@@ -36,6 +49,7 @@ const ChatArea: FC<ChatAreaProps> = ({ chat }) => {
 
     const fetchChatData = async () => {
       try {
+        setIsLoading(true);
         const [participants, messages] = await Promise.all([
           getParticipants(chat.id),
           getMessagesWithSenderName(chat.id),
@@ -45,6 +59,8 @@ const ChatArea: FC<ChatAreaProps> = ({ chat }) => {
         setMessages(messages || []);
       } catch (error) {
         console.error('Error fetching chat data:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -132,6 +148,7 @@ const ChatArea: FC<ChatAreaProps> = ({ chat }) => {
   const handleSendMessage = async () => {
     if (!messageInput.trim() || !chat?.id) return;
     try {
+      setIsSending(true);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
       
@@ -161,6 +178,8 @@ const ChatArea: FC<ChatAreaProps> = ({ chat }) => {
       console.log('Message sent successfully');
     } catch (error) {
       console.error('Error sending message:', error);
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -214,17 +233,24 @@ const ChatArea: FC<ChatAreaProps> = ({ chat }) => {
           backgroundRepeat: 'no-repeat'
         }} 
       >
-        <div className="px-6 py-4 space-y-4">
-          {messages.map((message) => (
-            <MessageBubble
-              key={message.id}
-              message={message.content}
-              timestamp={new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              sender={message.sender_name?.split("@")[0].split(".")[0] || 'Unknown'} 
-              isOutgoing={message.sender_id === user?.id}
-            />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="flex items-center justify-center h-full">
+            <CgSpinner className="animate-spin text-gray-400 text-2xl" />
+          </div>
+        ) : (
+          <div className="px-6 py-4 space-y-4">
+            {messages.map((message) => (
+              <MessageBubble
+                key={message.id}
+                message={message.content}
+                timestamp={new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                sender={message.sender_name?.split("@")[0].split(".")[0] || 'Unknown'} 
+                isOutgoing={message.sender_id === user?.id}
+              />
+            ))}
+            <div ref={messagesEndRef} /> {/* Invisible element at the bottom */}
+          </div>
+        )}
       </div>
 
       {/* Input Area */}
@@ -242,9 +268,18 @@ const ChatArea: FC<ChatAreaProps> = ({ chat }) => {
               handleSendMessage();
             }
           }}
+          disabled={isSending}
         />
-        <button className="p-2 text-green-600 hover:bg-gray-100 rounded-full" onClick={handleSendMessage}>
-          <IoMdSend className="text-2xl" />
+        <button 
+          className="p-2 text-green-600 hover:bg-gray-100 rounded-full disabled:opacity-50" 
+          onClick={handleSendMessage}
+          disabled={isSending}
+        >
+          {isSending ? (
+            <CgSpinner className="animate-spin text-2xl" />
+          ) : (
+            <IoMdSend className="text-2xl" />
+          )}
         </button>
       </div>
 

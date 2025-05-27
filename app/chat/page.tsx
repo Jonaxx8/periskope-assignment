@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Sidebar from "../../components/ui/Sidebar";
 import ChatArea from "../../components/ui/ChatArea";
 import { Chat } from "../types";
@@ -13,10 +13,12 @@ export default function ChatPage() {
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChat, setActiveChat] = useState<Chat | null>(null);
   const [activeNavItem, setActiveNavItem] = useState('chats');
+  const [isLoading, setIsLoading] = useState(false);
   const supabase = createClient();
 
   const fetchChats = async () => {
     try {
+      setIsLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
@@ -47,6 +49,8 @@ export default function ChatPage() {
       setChats(formattedChats);
     } catch (error) {
       console.error('Error fetching chats:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -75,6 +79,7 @@ export default function ChatPage() {
             activeChat={activeChat}
             onChatSelect={setActiveChat}
             onChatsUpdate={fetchChats}
+            isLoading={isLoading}
           />
           <div className="flex-1 min-h-0 flex">
             <div className="flex-1">
