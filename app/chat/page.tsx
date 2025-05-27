@@ -44,6 +44,8 @@ export default function ChatPage() {
         title: chat.title,
         type: chat.type,
         lastMessageTime: new Date(chat.last_message_at || chat.created_at).toLocaleDateString(),
+        created_at: chat.created_at,
+        last_message_at: chat.last_message_at || chat.created_at,
       }));
 
       setChats(formattedChats);

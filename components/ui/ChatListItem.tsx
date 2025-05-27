@@ -43,14 +43,14 @@ const ChatListItem: FC<ChatListItemProps> = ({ chat, isActive, onClick }) => {
               <span className="text-gray-500 text-sm">{chat.title[0]}</span>
             </div>
           )}
-          {chat.isOnline && (
+          {/* {chat.isOnline && (
             <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
-          )}
+          )} */}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between">
             <h3 className="font-medium text-gray-900 truncate">{chat.title}</h3>
-            <span className="text-xs text-gray-500">{chat.lastMessageTime}</span>
+            <span className="text-xs text-gray-500">{chat.last_message_at ? new Date(chat.last_message_at).toLocaleDateString() : ''}</span>
           </div>
           {lastMessage && lastMessage.length > 0 && (
             <div className="flex items-center mt-1">
