@@ -10,8 +10,6 @@ import { BsStars } from "react-icons/bs";
 import { createClient } from '@/utils/supabase/client';
 import { IoMdSend } from "react-icons/io";
 
-
-
 interface ChatAreaProps {
   chat: Chat | null;
 }
@@ -32,7 +30,9 @@ const ChatArea: FC<ChatAreaProps> = ({ chat }) => {
   }, []);
 
   useEffect(() => {
-    if (!chat?.id) return;
+    if (!chat?.id || !user?.id) return;
+
+    console.log('Setting up real-time subscription for chat:', chat.id);
 
     const fetchChatData = async () => {
       try {
@@ -40,8 +40,6 @@ const ChatArea: FC<ChatAreaProps> = ({ chat }) => {
           getParticipants(chat.id),
           getMessagesWithSenderName(chat.id),
         ]);
-
-        console.log("messages", messages);
         
         setParticipants(participants || []);
         setMessages(messages || []);
@@ -51,8 +49,77 @@ const ChatArea: FC<ChatAreaProps> = ({ chat }) => {
     };
 
     fetchChatData();
-  }, [chat?.id]);
 
+    // Set up real-time subscription
+    const channel = supabase
+      .channel(`chat:${chat.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${chat.id}`
+        },
+        async (payload: { new: { id: string; sender_id: string; content: string; created_at: string } }) => {
+          console.log('Received real-time payload:', payload);
+          
+          try {
+            // First fetch the message
+            const { data: message, error: messageError } = await supabase
+              .from('messages')
+              .select('*')
+              .eq('id', payload.new.id)
+              .single();
+
+            if (messageError) {
+              console.error('Error fetching message:', messageError);
+              return;
+            }
+
+            console.log('Fetched message:', message);
+
+            // Then fetch the sender's profile
+            const { data: profile, error: profileError } = await supabase
+              .from('profiles')
+              .select('display_name, email')
+              .eq('id', payload.new.sender_id)
+              .single();
+
+            if (profileError) {
+              console.error('Error fetching profile:', profileError);
+              return;
+            }
+
+            console.log('Fetched profile:', profile);
+
+            const messageWithSender = {
+              ...message,
+              sender_name: profile?.display_name || profile?.email || 'Unknown'
+            };
+
+            // Only add the message if it's not from the current user
+            if (messageWithSender.sender_id !== user.id) {
+              console.log('Adding new message to state:', messageWithSender);
+              setMessages(prev => [...prev, messageWithSender]);
+            } else {
+              console.log('Skipping message from current user');
+            }
+          } catch (error) {
+            console.error('Error processing real-time message:', error);
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log('Subscription status:', status);
+      });
+
+    // Cleanup subscription
+    return () => {
+      console.log('Cleaning up subscription for chat:', chat.id);
+      supabase.removeChannel(channel);
+    };
+  }, [chat?.id, user?.id]);
 
   if (!chat) {
     return (
@@ -67,6 +134,9 @@ const ChatArea: FC<ChatAreaProps> = ({ chat }) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
+      
+      console.log('Sending new message');
+      
       const newMessage = {
         id: Math.random().toString(36).substr(2, 9),
         conversation_id: chat.id,
@@ -76,13 +146,19 @@ const ChatArea: FC<ChatAreaProps> = ({ chat }) => {
         created_at: new Date().toISOString(),
         is_read: false,
       };
+      
+      // Optimistically add message to UI
       setMessages((prev) => [...prev, newMessage]);
       setMessageInput('');
+      
+      // Send to server
       await sendMessage({
         conversationId: chat.id,
         senderId: user.id,
         content: newMessage.content,
       });
+      
+      console.log('Message sent successfully');
     } catch (error) {
       console.error('Error sending message:', error);
     }
