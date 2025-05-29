@@ -9,7 +9,7 @@ A modern real-time chat application built with Next.js and Supabase, featuring a
 *Clean and simple login interface with email/password authentication*
 
 ### Chat Interface
-![Chat Interface](docs/images/image2.png)
+![Chat Interface](docs/images/image3.png)
 *Modern chat interface with sidebar navigation and real-time messaging*
 
 Key Interface Features:
