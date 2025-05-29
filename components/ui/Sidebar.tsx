@@ -140,12 +140,12 @@ const Sidebar: FC<SidebarProps> = ({
               <RiFolderDownloadFill />
               Custom filter
             </span>
-            <button className="text-gray-600 text-xs border rounded p-1 bg-white">Save</button>
+            <button className="text-gray-800 text-xs border rounded p-1 px-2 bg-white shadow-s ">Save</button>
           </div>}
           <div className="flex items-center space-x-2">
             <button 
               onClick={handleSearchToggle}
-              className={`p-1 relative hover:bg-gray-100 rounded border flex items-center space-x-1 text-xs !bg-white ${activeSearch ? 'text-green-600' : 'text-gray-500'}`}
+              className={`p-1 relative hover:bg-gray-100 rounded border flex items-center space-x-1 px-2 text-xs !bg-white ${activeSearch ? 'text-green-600' : 'text-gray-800'}`}
             >
               <FaSearch size={10} className={activeSearch ? 'text-green-600' : 'text-gray-500'} />
               <span>Search</span>
@@ -153,7 +153,7 @@ const Sidebar: FC<SidebarProps> = ({
             </button>
             <button 
               onClick={() => setActiveFilter(!activeFilter)}
-              className={`p-1 relative hover:bg-gray-100 rounded border flex items-center space-x-1 text-xs !bg-white ${activeFilter ? 'text-green-600' : 'text-gray-500'}`}
+              className={`p-1 relative hover:bg-gray-100 rounded border flex items-center space-x-1 px-2  text-xs !bg-white ${activeFilter ? 'text-green-600' : 'text-gray-800'}`}
             >
               <MdFilterList size={12} className={activeFilter ? 'text-green-600' : 'text-gray-500'}/>
               <span>{activeFilter ? `Filtered` : `Filter`}</span>

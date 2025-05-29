@@ -50,7 +50,7 @@ const TopBar: FC<TopBarProps> = ({ activeSection, onRefresh, onHelp }) => {
       <div className="flex items-center space-x-3">
         <button 
           onClick={onRefresh}
-          className="flex items-center space-x-1 px-2 py-1 hover:bg-gray-100 rounded text-sm border"
+          className="flex items-center space-x-1 px-2 py-1 hover:bg-gray-100 rounded text-sm border shadow-sm"
         >
           <LuRefreshCcwDot size={16} />
           <span>Refresh</span>
@@ -58,15 +58,15 @@ const TopBar: FC<TopBarProps> = ({ activeSection, onRefresh, onHelp }) => {
         
         <button 
           onClick={onHelp}
-          className="flex items-center space-x-1 px-2 py-1 hover:bg-gray-100 rounded text-sm border"
+          className="flex items-center space-x-1 px-2 py-1 hover:bg-gray-100 rounded text-sm border shadow-sm"
         >
           <IoHelpCircleOutline size={16} />
           <span>Help</span>
         </button>
         
-        <div className="flex items-center space-x-1 text-gray-600 border rounded py-1 px-2">
-          <div className="w-4 h-4 bg-yellow-200 rounded-full flex items-center justify-center">
-            <span className="text-xs font-bold text-yellow-400"><FaCircle size={10} /></span>
+        <div className="flex items-center space-x-1 text-gray-600 border rounded py-1 px-2 shadow-sm">
+          <div className="w-4 h-4 bg-yellow-100 rounded-full flex items-center justify-center">
+            <span className="text-xs font-bold text-yellow-300"><FaCircle size={8} /></span>
           </div>
           <span className="text-sm font-medium">5 / 6 phones</span>
           <div className="w-4 h-4  rounded-full flex items-center justify-center ml-1">
@@ -75,15 +75,15 @@ const TopBar: FC<TopBarProps> = ({ activeSection, onRefresh, onHelp }) => {
         </div>
 
         <div className="flex items-center space-x-1">
-          <button className="p-2 hover:bg-gray-100 rounded text-gray-600 border">
-            <MdOutlineInstallDesktop size={16} className="text-gray-600" />
+          <button className="p-2 hover:bg-gray-100 rounded text-gray-600 border shadow-sm">
+            <MdOutlineInstallDesktop size={12} className="text-gray-600" />
           </button>
-          <button className="p-2 hover:bg-gray-100 rounded text-gray-600 border">
-            <FaBellSlash size={16} className="text-gray-600" />
+          <button className="p-2 hover:bg-gray-100 rounded text-gray-600 border shadow-sm">
+            <FaBellSlash size={12} className="text-gray-600" />
           </button>
-          <button className="p-2 hover:bg-gray-100 rounded text-gray-600 border flex">
-            <BsStars size={14} color='#FFD700' />
-            <TfiMenuAlt size={16} className="text-gray-600" />
+          <button className="p-2 hover:bg-gray-100 rounded text-gray-600 border flex shadow-sm">
+            <BsStars size={12} color='#FFD700' />
+            <TfiMenuAlt size={12} className="text-gray-600" />
           </button>
         </div>
       </div>
